@@ -1,0 +1,78 @@
+- name: claves
+  file: claves.aif
+  key: 1
+  midi: 1
+
+- name: cl_hihat
+  file: cl_hihat.aif
+  key: 2
+  midi: 1
+
+- name: conga1
+  file: conga1.aif
+  key: 3
+  midi: 1
+
+- name: cowbell
+  file: cowbell.aif
+  key: 4
+  midi: 1
+
+- name: crashcym
+  file: crashcym.aif
+  key: 5
+  midi: 1
+
+- name: handclap
+  file: handclap.aif
+  key: 6
+  midi: 1
+
+- name: hi_conga
+  file: hi_conga.aif
+  key: 7
+  midi: 1
+
+- name: hightom
+  file: hightom.aif
+  key: 8
+  midi: 1
+
+- name: kick1
+  file: kick1.aif
+  key: 9
+  midi: 1
+
+- name: kick2
+  file: kick2.aif
+  key: 0
+  midi: 1
+
+- name: maracas
+  file: maracas.aif
+  key: a
+  midi: 1
+
+- name: open_hh
+  file: open_hh.aif
+  key: s
+  midi: 1
+
+- name: rimshot
+  file: rimshot.aif
+  key: d
+  midi: 1
+
+- name: snare
+  file: snare.aif
+  key: f
+  midi: 1
+
+- name: tom1
+  file: tom1.aif
+  key: g
+  midi: 1
+
+- name: skdjf
+  file: /home/ohinds/z/harris_hawk/mix/mtfb_single/01-Harris_Hawk-Make_The_Fonz_Bleed.wav
+  key: w
