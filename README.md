@@ -12,3 +12,5 @@ $ cd test/808
 $ ../../brain 808.yml
 
 Keyboard should play drums (try 0 and f).
+
+q twice to quit.
