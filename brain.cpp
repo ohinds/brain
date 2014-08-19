@@ -1,11 +1,13 @@
 #include "brain.h"
 
 #include <iostream>
+#include <signal.h>
 #include <unistd.h>
 #include <vector>
 
 #include <sndfile.h>
 #include <pulse/pulseaudio.h>
+#include <RtMidi.h>
 #include <yaml.h>
 
 #include "sample.h"
@@ -20,7 +22,7 @@ using std::vector;
 
 namespace {
 
-void context_state_callback(pa_context *c, void *user_data) {
+void pa_context_state_callback(pa_context *c, void *user_data) {
   assert(c);
 
   Brain *brain = static_cast<Brain*>(user_data);
@@ -46,10 +48,10 @@ void context_state_callback(pa_context *c, void *user_data) {
   }
 }
 
-void exit_signal_callback(pa_mainloop_api *mainloop_api,
-                          pa_signal_event *event,
-                          int signal,
-                          void *user_data) {
+void pa_exit_signal_callback(pa_mainloop_api *mainloop_api,
+                             pa_signal_event *event,
+                             int signal,
+                             void *user_data) {
   static_cast<Brain*>(user_data)->stop();
 }
 
@@ -101,6 +103,8 @@ Brain::~Brain() {
        it != samples.end(); ++it) {
     delete *it;
   }
+
+  delete midi_in;
 }
 
 void Brain::setReady(bool ready) {
@@ -112,6 +116,7 @@ void Brain::setReady(bool ready) {
 }
 
 bool Brain::init() {
+  // initialize pulse audio
   mainloop = pa_threaded_mainloop_new();
   if (mainloop == NULL) {
     cerr << "Creating pulseaudio mainloop failed" << endl;
@@ -120,7 +125,7 @@ bool Brain::init() {
 
   mainloop_api = pa_threaded_mainloop_get_api(mainloop);
   pa_signal_init(mainloop_api);
-  pa_signal_new(SIGINT, exit_signal_callback, this);
+  pa_signal_new(SIGINT, pa_exit_signal_callback, this);
 
   context = pa_context_new(mainloop_api, "brain");
   if (context == NULL) {
@@ -128,7 +133,7 @@ bool Brain::init() {
     return false;
   }
 
-  pa_context_set_state_callback(context, context_state_callback, this);
+  pa_context_set_state_callback(context, pa_context_state_callback, this);
 
   if (pa_context_connect(context, NULL, PA_CONTEXT_NOFLAGS, NULL) < 0) {
     cerr << "Connecting to pulseaudio context failed" << endl;
@@ -143,6 +148,22 @@ bool Brain::init() {
   } while (!pa_context_ready && !pa_init_error);
 
   pa_threaded_mainloop_unlock(mainloop);
+
+  // initialize Midi
+  midi_in = new RtMidiIn();
+  if (midi_in == NULL) {
+    cerr << "Failed to initialize Midi input" << endl;
+    return false;
+  }
+
+  size_t num_ports = midi_in->getPortCount();
+  if (num_ports == 0) {
+    cerr << "No Midi ports were found" << endl;
+    return false;
+  }
+
+  midi_in->openPort(0);
+  midi_in->ignoreTypes( false, false, false );
 
   return true;
 }
@@ -163,6 +184,18 @@ bool Brain::run() {
       else {
         ++it;
       }
+    }
+
+    vector<unsigned char> message;
+    midi_in->getMessage(&message);
+    if (!message.empty()) {
+      cout << "midi message of " << message.size() << " bits received:" << endl;
+
+      for (vector<unsigned char>::const_iterator it = message.begin();
+           it != message.end(); ++it) {
+        cout << (int) *it << " ";
+      }
+      cout << endl;
     }
 
     char in = terminal_input.getNextChar();

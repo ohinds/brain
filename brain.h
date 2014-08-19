@@ -7,6 +7,7 @@
 struct pa_context;
 struct pa_threaded_mainloop;
 struct pa_mainloop_api;
+class RtMidiIn;
 class Sample;
 
 typedef std::map<char, Sample*> KeySampleMap;
@@ -50,4 +51,5 @@ class Brain {
   KeySampleMap key_sample_map;
   MidiSampleMap midi_sample_map;
 
+  RtMidiIn *midi_in;
 };

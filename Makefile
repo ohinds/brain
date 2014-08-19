@@ -16,7 +16,8 @@ CINC = -I/usr/include/pulse \
 
 CLIB = -lpulse \
        -lsndfile \
-       -lyaml-cpp
+       -lyaml-cpp \
+       -lrtmidi
 
 OBJ_DIR = obj
 
