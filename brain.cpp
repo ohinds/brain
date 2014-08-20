@@ -12,7 +12,6 @@
 
 #include "sample.h"
 #include "player.h"
-#include "terminal_input.h"
 
 using std::cerr;
 using std::cout;
@@ -68,7 +67,7 @@ Brain::Brain(const std::string &config_file)
   YAML::Node node = YAML::LoadFile(config_file);
   for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
     if (!(*it)["name"] || !(*it)["file"]) {
-      cerr << "name and file are required fields for each sample" << endl;
+      ui << "name and file are required fields for each sample\n";
       continue;
     }
 
@@ -98,10 +97,9 @@ Brain::~Brain() {
 
   if (mainloop) {
     pa_signal_done();
+    mainloop_api->quit(mainloop_api, 0);
     pa_threaded_mainloop_free(mainloop);
   }
-
-  mainloop_api->quit(mainloop_api, 0);
 
   for (vector<Sample*>::iterator it = samples.begin();
        it != samples.end(); ++it) {
@@ -123,7 +121,7 @@ bool Brain::init() {
   // initialize pulse audio
   mainloop = pa_threaded_mainloop_new();
   if (mainloop == NULL) {
-    cerr << "Creating pulseaudio mainloop failed" << endl;
+    ui << "Creating pulseaudio mainloop failed\n";
     return false;
   }
 
@@ -133,14 +131,14 @@ bool Brain::init() {
 
   context = pa_context_new(mainloop_api, "brain");
   if (context == NULL) {
-    cerr << "Creating pulseaudio context failed" << endl;
+    ui << "Creating pulseaudio context failed\n";
     return false;
   }
 
   pa_context_set_state_callback(context, pa_context_state_callback, this);
 
   if (pa_context_connect(context, NULL, PA_CONTEXT_NOFLAGS, NULL) < 0) {
-    cerr << "Connecting to pulseaudio context failed" << endl;
+    ui << "Connecting to pulseaudio context failed\n";
     return false;
   }
 
@@ -156,20 +154,21 @@ bool Brain::init() {
   // initialize Midi
   midi_in = new RtMidiIn();
   if (midi_in == NULL) {
-    cerr << "Failed to initialize Midi input" << endl;
+    ui << "Failed to initialize Midi input\n";
     return false;
   }
 
   size_t num_ports = midi_in->getPortCount();
-  std::cout << "\nThere are " << num_ports << " MIDI input sources available.\n";
+  ui << "There are " << num_ports
+     << " MIDI input sources available.\n";
   std::string portName;
   for ( unsigned int i=0; i<num_ports; i++ ) {
     portName = midi_in->getPortName(i);
-    std::cout << "  Input Port #" << i+1 << ": " << portName << '\n';
+    ui << "  Input Port #" << i << ": " << portName << "\n";
   }
 
   if (num_ports == 0) {
-    cerr << "No Midi ports were found" << endl;
+    ui << "No Midi ports were found\n";
     return false;
   }
 
@@ -181,9 +180,8 @@ bool Brain::init() {
 
 bool Brain::run() {
   vector<Player*> players;
-  TerminalInput terminal_input;
-  terminal_input.start();
 
+  ui << "ready\n";
   while (!should_stop) {
     // check for done samples
     for (vector<Player*>::iterator it = players.begin();
@@ -216,7 +214,7 @@ bool Brain::run() {
     }
 
     // check for keyboard input
-    char in = terminal_input.getNextChar();
+    char in = ui.getInput();
     if (in == 'q') {
       stop();
       continue;
@@ -228,8 +226,7 @@ bool Brain::run() {
     }
   }
 
-  cout << "quitting" << endl;
-  terminal_input.stop();
+  ui << "quit\n";
 
   return true;
 }

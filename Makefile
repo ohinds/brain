@@ -14,10 +14,13 @@ COPTIM =
 CINC = -I/usr/include/pulse \
        -I/usr/include/yaml-cpp
 
-CLIB = -lpulse \
+CLIB = \
+       -lncurses \
+       -lpulse \
        -lsndfile \
+       -lrtmidi \
        -lyaml-cpp \
-       -lrtmidi
+
 
 OBJ_DIR = obj
 

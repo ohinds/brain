@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "ui.h"
+
 struct pa_context;
 struct pa_threaded_mainloop;
 struct pa_mainloop_api;
@@ -52,4 +54,5 @@ class Brain {
   MidiSampleMap midi_sample_map;
 
   RtMidiIn *midi_in;
+  Ui ui;
 };
