@@ -12,7 +12,8 @@ class Player {
 
   ~Player();
 
-  void start(pa_context* c);
+  // begin sample playback. Volume == 1.0 is full volume.
+  void start(pa_context* c, float volume);
 
   bool writeData(pa_stream *stream, size_t num_frames);
 

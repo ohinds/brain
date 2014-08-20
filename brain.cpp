@@ -84,6 +84,10 @@ Brain::Brain(const std::string &config_file)
     if ((*it)["midi"]) {
       midi_sample_map[(*it)["midi"].as<int>()] = sample;
     }
+
+    if ((*it)["pan"]) {
+      sample->setPan((*it)["pan"].as<float>());
+    }
   }
 }
 
@@ -157,13 +161,20 @@ bool Brain::init() {
   }
 
   size_t num_ports = midi_in->getPortCount();
+  std::cout << "\nThere are " << num_ports << " MIDI input sources available.\n";
+  std::string portName;
+  for ( unsigned int i=0; i<num_ports; i++ ) {
+    portName = midi_in->getPortName(i);
+    std::cout << "  Input Port #" << i+1 << ": " << portName << '\n';
+  }
+
   if (num_ports == 0) {
     cerr << "No Midi ports were found" << endl;
     return false;
   }
 
-  midi_in->openPort(0);
-  midi_in->ignoreTypes( false, false, false );
+  midi_in->openPort(1);
+  midi_in->ignoreTypes(false, false, false);
 
   return true;
 }
@@ -174,6 +185,7 @@ bool Brain::run() {
   terminal_input.start();
 
   while (!should_stop) {
+    // check for done samples
     for (vector<Player*>::iterator it = players.begin();
          it != players.end();) {
       if ((*it)->isFinished()) {
@@ -186,18 +198,24 @@ bool Brain::run() {
       }
     }
 
+    // check for new midi messages
     vector<unsigned char> message;
     midi_in->getMessage(&message);
-    if (!message.empty()) {
-      cout << "midi message of " << message.size() << " bits received:" << endl;
-
-      for (vector<unsigned char>::const_iterator it = message.begin();
-           it != message.end(); ++it) {
-        cout << (int) *it << " ";
+    if (message.size() > 1) {
+      const unsigned char NOTE_ON_OR_OFF = 144;
+      if (message[0] == NOTE_ON_OR_OFF && message[2] > 0) { // note on
+        MidiSampleMap::const_iterator midi_sample =
+          midi_sample_map.find(message[1]);
+        if (midi_sample != midi_sample_map.end()) {
+          const char MAX_MIDI_VOL = 127;
+          float volume = ((float) message[2]) / MAX_MIDI_VOL;
+          players.push_back(
+            midi_sample->second->play(mainloop, context, volume));
+        }
       }
-      cout << endl;
     }
 
+    // check for keyboard input
     char in = terminal_input.getNextChar();
     if (in == 'q') {
       stop();
@@ -206,7 +224,7 @@ bool Brain::run() {
 
     KeySampleMap::const_iterator key_sample = key_sample_map.find(in);
     if (key_sample != key_sample_map.end()) {
-      players.push_back(key_sample->second->play(mainloop, context));
+      players.push_back(key_sample->second->play(mainloop, context, 1.0));
     }
   }
 

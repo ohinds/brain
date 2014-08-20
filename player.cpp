@@ -31,7 +31,7 @@ Player::Player(Sample *sample, pa_threaded_mainloop *m)
   , done(false)
 {}
 
-void Player::start(pa_context * c) {
+void Player::start(pa_context * c, float vol_ratio) {
   pa_threaded_mainloop_lock(mainloop);
 
   stream = pa_stream_new(c, "", &sample->getSampleSpec(), NULL);
@@ -41,16 +41,18 @@ void Player::start(pa_context * c) {
     return;
   }
 
-  pa_volume_t volume = PA_VOLUME_NORM;
-  pa_cvolume cv;
+  pa_volume_t volume = sample->getPanCorrection() * vol_ratio * PA_VOLUME_NORM;
+  pa_cvolume *cvolume = new pa_cvolume;
+  cvolume = pa_cvolume_set(cvolume, sample->getSampleSpec().channels, volume);
+
+  cvolume = pa_cvolume_set_balance(cvolume, sample->getChannelMap(),
+                                   sample->getPan());
 
   pa_stream_set_write_callback(stream, stream_write_callback, this);
-  pa_stream_connect_playback(stream, NULL, NULL,
-                             PA_STREAM_NOFLAGS,
-                             pa_cvolume_set(&cv,
-                                            sample->getSampleSpec().channels,
-                                            volume),
-                             NULL);
+  pa_stream_connect_playback(
+    stream, NULL, NULL, PA_STREAM_NOFLAGS, cvolume, NULL);
+
+  delete cvolume;
   pa_threaded_mainloop_unlock(mainloop);
 }
 
@@ -63,6 +65,8 @@ Player::~Player() {
 }
 
 bool Player::writeData(pa_stream *stream, size_t num_bytes) {
+  const bool STUPID = false;
+
   if (done) {
     return false;
   }
@@ -71,10 +75,18 @@ bool Player::writeData(pa_stream *stream, size_t num_bytes) {
     num_bytes = sample->getTotalBytes() - next_frame * sizeof(short) - 1;
   }
 
-  pa_stream_write(stream, sample->getFrames() + next_frame, num_bytes,
-                  NULL, 0, PA_SEEK_RELATIVE);
+  if (!STUPID) {
+    pa_stream_write(stream, sample->getFrames() + next_frame, num_bytes,
+                    NULL, 0, PA_SEEK_RELATIVE);
+    next_frame += num_bytes / sizeof(short);
+  }
+  else {
+    pa_stream_write(
+      stream, sample->getFrames() + next_frame * sample->getFrameSize(),
+      num_bytes * sample->getFrameSize() / 2, NULL, 0, PA_SEEK_RELATIVE);
+    next_frame += num_bytes / sample->getFrameSize() + 1000;
+  }
 
-  next_frame += num_bytes / sizeof(short);
   if (next_frame * sizeof(short) >= sample->getTotalBytes() - 2) {
     pa_stream_set_write_callback(stream, NULL, NULL);
     pa_stream_drain(stream, stream_drain_complete, this);

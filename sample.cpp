@@ -17,6 +17,8 @@ Sample::Sample(const string &filename)
   , frame_size(0)
   , total_bytes(0)
   , frames(NULL)
+  , pan(0.)
+  , pan_correction(1.)
 {
   SF_INFO info;
   SNDFILE *snd_file = sf_open(filename.c_str(), SFM_READ, &info);
@@ -49,14 +51,16 @@ Sample::Sample(const string &filename)
   frames = (short*) pa_xmalloc(total_bytes);
   sf_readf_short(snd_file, frames, info.frames);
   sf_close(snd_file);
+
+  channel_map = *pa_channel_map_init_stereo(&channel_map);
 }
 
 Sample::~Sample() {
   pa_xfree(frames);
 }
 
-Player* Sample::play(pa_threaded_mainloop *m, pa_context *c) {
+Player* Sample::play(pa_threaded_mainloop *m, pa_context *c, float volume) {
   Player *player = new Player(this, m);
-  player->start(c);
+  player->start(c, volume);
   return player;
 }

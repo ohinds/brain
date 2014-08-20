@@ -1,74 +1,83 @@
 - name: claves
-  file: claves.aif
+  file: claves_st.wav
   key: 1
-  midi: 1
+  midi: 53
 
 - name: cl_hihat
-  file: cl_hihat.aif
+  file: cl_hihat_st.wav
   key: 2
-  midi: 1
+  midi: 42
+  pan: -1
 
 - name: conga1
-  file: conga1.aif
+  file: conga1_st.wav
   key: 3
-  midi: 1
+  midi: 41
+  pan: 0.25
 
 - name: cowbell
-  file: cowbell.aif
+  file: cowbell_st.wav
   key: 4
-  midi: 1
+  midi: 56
+  pan: -1
 
 - name: crashcym
-  file: crashcym.aif
+  file: crashcym_st.wav
   key: 5
-  midi: 1
+  midi: 49
+  pan: 0.25
 
 - name: handclap
-  file: handclap.aif
+  file: handclap_st.wav
   key: 6
-  midi: 1
+  midi: 39
+  pan: 0.75
 
 - name: hi_conga
-  file: hi_conga.aif
+  file: hi_conga_st.wav
   key: 7
-  midi: 1
+  midi: 45
+  pan: -0.25
 
 - name: hightom
-  file: hightom.aif
+  file: hightom_st.wav
   key: 8
-  midi: 1
+  midi: 50
+  pan: -0.5
 
 - name: kick1
-  file: kick1.aif
+  file: kick1_st.wav
   key: 9
-  midi: 1
+  midi: 36
 
 - name: kick2
-  file: kick2.aif
+  file: kick2_st.wav
   key: 0
-  midi: 1
+  midi: 39
 
 - name: maracas
-  file: maracas.aif
+  file: maracas_st.wav
   key: a
-  midi: 1
+  midi: 51
 
 - name: open_hh
-  file: open_hh.aif
+  file: open_hh_st.wav
   key: s
-  midi: 1
+  midi: 46
+  pan: -1
 
 - name: rimshot
-  file: rimshot.aif
+  file: rimshot_st.wav
   key: d
-  midi: 1
+  midi: 37
 
 - name: snare
-  file: snare.aif
+  file: snare_st.wav
   key: f
-  midi: 1
+  midi: 38
 
 - name: tom1
-  file: tom1.aif
+  file: tom1_st.wav
   key: g
-  midi: 1
+  midi: 48
+  pan: 0.5

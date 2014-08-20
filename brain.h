@@ -11,7 +11,7 @@ class RtMidiIn;
 class Sample;
 
 typedef std::map<char, Sample*> KeySampleMap;
-typedef std::map<int, Sample*> MidiSampleMap;
+typedef std::map<unsigned char, Sample*> MidiSampleMap;
 
 class Brain {
 
