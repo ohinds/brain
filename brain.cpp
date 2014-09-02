@@ -110,29 +110,51 @@ bool Brain::run() {
           midi_sample_map.find(message[1]);
         if (midi_sample != midi_sample_map.end()) {
           const char MAX_MIDI_VOL = 127;
-          float volume = ((float) message[2]) / MAX_MIDI_VOL;
-          cout << volume;
-          mixer.play(midi_sample->second);
+          float velocity = ((float) message[2]) / MAX_MIDI_VOL;
+          mixer.play(midi_sample->second, velocity);
         }
       }
     }
 
     // check for keyboard input
     char in = ui.getInput();
-    if (in == 'q') {
-      stop();
+    if (in == -1) {
       continue;
     }
 
     KeySampleMap::const_iterator key_sample = key_sample_map.find(in);
     if (key_sample != key_sample_map.end()) {
-      mixer.play(key_sample->second);
+      mixer.play(key_sample->second, 1.0);
+      continue;
     }
+
+    handleKeyboardCommand(in);
   }
 
   ui << "quit\n";
 
   return true;
+}
+
+void Brain::handleKeyboardCommand(char c) {
+  switch(c) {
+      case 'q':
+        stop();
+        break;
+
+      case '=':
+      case '+':
+        mixer.increaseMasterVolume();
+        break;
+
+      case '-':
+      case '_':
+        mixer.decreaseMasterVolume();
+        break;
+
+      default:
+        break;
+  }
 }
 
 void Brain::stop() {

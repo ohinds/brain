@@ -1,7 +1,5 @@
 #include "mixer.h"
 
-//#include <algorithm>
-
 #include <iostream>
 
 #include "sample.h"
@@ -31,6 +29,7 @@ Mixer::Mixer()
   : pcm_handle(NULL)
   , buffer_size(1024)
   , period_size(64)
+  , master_volume(0.5)
   , next_buffer(NULL)
   , next_buffer_computed(false)
 {}
@@ -42,7 +41,6 @@ Mixer::~Mixer() {
 
   //delete next_buffer;
 }
-
 
 bool Mixer::init() {
 
@@ -148,8 +146,8 @@ bool Mixer::init() {
   return true;
 }
 
-bool Mixer::play(Sample *sample) {
-  active_samples.push_back(ActiveSample(sample, 0));
+bool Mixer::play(Sample *sample, float velocity) {
+  active_samples.push_back(ActiveSample(sample, velocity));
   return true;
 }
 
@@ -160,25 +158,22 @@ bool Mixer::tick() {
          next_buffer + buffer_size * NUM_CHANNELS * sizeof(short), 0);
     for (deque<ActiveSample>::iterator it = active_samples.begin();
          it != active_samples.end(); ) {
-      Sample *sample = it->first;
-      size_t next_frame = it->second;
-
       bool done = false;
       for (size_t i = 0; i < buffer_size; i++) {
-        if (next_frame + i >= sample->getNumFrames()) {
+        if (it->next_frame + i >= it->sample->getNumFrames()) {
           it = active_samples.erase(it);
           done = true;
           break;
         }
 
         for (size_t c = 0; c < NUM_CHANNELS; c++) {
-          next_buffer[NUM_CHANNELS * i + c] +=
-            sample->getFrameChannelVal(next_frame + i, c == 0);
+          next_buffer[NUM_CHANNELS * i + c] += master_volume * it->velocity *
+            it->sample->getFrameChannelVal(it->next_frame + i, c == 0);
         }
       }
 
       if (!done) {
-        it->second += buffer_size;
+        it->next_frame += buffer_size;
         ++it;
       }
     }

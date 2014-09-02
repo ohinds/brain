@@ -36,6 +36,8 @@ class Brain {
 
   bool run();
 
+  void handleKeyboardCommand(char c);
+
   void stop();
 
  private:
