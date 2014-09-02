@@ -5,8 +5,6 @@
 
 #include <sndfile.h>
 
-#include "player.h"
-
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -14,9 +12,10 @@ using std::string;
 
 Sample::Sample(const string &filename)
   : filename(filename)
-  , frame_size(0)
-  , total_bytes(0)
+  , num_frames(0)
+  , num_channels(0)
   , frames(NULL)
+  , volume(1.)
   , pan(0.)
   , pan_correction(1.)
 {
@@ -33,34 +32,33 @@ Sample::Sample(const string &filename)
     return;
   }
 
-  sample_spec.rate = (uint32_t) info.samplerate;
-  sample_spec.channels = (uint8_t) info.channels;
-  sample_spec.format = PA_SAMPLE_S16NE;
+  num_frames = info.frames;
+  num_channels = info.channels;
 
-  frame_size = pa_frame_size(&sample_spec);
-
-  // pulse audio refuses to play samples with a total number of frames
-  // fewer than that requested in the first stream_write_callback. Add
-  // some empty audio to the end of short samples so they'll play.
-  const int MIN_FRAMES = 30000;
-  if (info.frames < MIN_FRAMES) {
-    info.frames = MIN_FRAMES;
-  }
-  total_bytes = info.frames * frame_size;
-
-  frames = (short*) pa_xmalloc(total_bytes);
+  frames = new short[info.frames * info.channels];
   sf_readf_short(snd_file, frames, info.frames);
   sf_close(snd_file);
-
-  channel_map = *pa_channel_map_init_stereo(&channel_map);
 }
 
 Sample::~Sample() {
-  pa_xfree(frames);
+  delete [] frames;
 }
 
-Player* Sample::play(pa_threaded_mainloop *m, pa_context *c, float volume) {
-  Player *player = new Player(this, m);
-  player->start(c, volume);
-  return player;
+short Sample::
+getFrameChannelVal(size_t frame, bool left) const {
+  short base_val = 0;
+
+  if (num_channels == 1 || left) {
+    base_val = *(frames + frame * num_channels);
+  }
+  else {
+    base_val = *(frames + frame * num_channels + 1);
+  }
+
+  if (left) {
+    return (1 - pan) * 0.5 * volume * base_val;
+  }
+  else {
+    return (pan + 1) * 0.5 * volume * base_val;
+  }
 }

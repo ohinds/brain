@@ -4,11 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "mixer.h"
 #include "ui.h"
 
-struct pa_context;
-struct pa_threaded_mainloop;
-struct pa_mainloop_api;
+class Mixer;
 class RtMidiIn;
 class Sample;
 
@@ -25,12 +24,12 @@ class Brain {
 
   void setReady(bool ready);
 
-  void setInitError(bool init_error) {
-    pa_init_error = init_error;
+  void setInitError(bool _init_error) {
+    init_error = _init_error;
   }
 
   bool getInitError() const {
-    return pa_init_error;
+    return init_error;
   }
 
   bool init();
@@ -41,18 +40,14 @@ class Brain {
 
  private:
 
-  pa_context *context;
-  pa_threaded_mainloop *mainloop;
-  pa_mainloop_api *mainloop_api;
-
-  bool pa_context_ready;
-  bool pa_init_error;
+  bool init_error;
   bool should_stop;
 
   std::vector<Sample*> samples;
   KeySampleMap key_sample_map;
   MidiSampleMap midi_sample_map;
 
+  Mixer mixer;
   RtMidiIn *midi_in;
   Ui ui;
 };

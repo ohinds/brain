@@ -2,9 +2,6 @@
 
 #include <cmath>
 #include <string>
-#include <pulseaudio.h>
-
-class Player;
 
 class Sample {
 
@@ -14,32 +11,27 @@ class Sample {
 
   ~Sample();
 
-  // begin playback at the specified volume. Volume == 1.0 is max
-  Player* play(pa_threaded_mainloop *m, pa_context* c, float volume);
-
   const std::string& getFilename() const {
     return filename;
   }
 
-  const pa_sample_spec& getSampleSpec() const {
-    return sample_spec;
+  size_t getNumFrames() const {
+    return num_frames;
   }
 
-  size_t getFrameSize() const {
-    return frame_size;
-  }
-
-  size_t getTotalBytes() const {
-    return total_bytes;
+  size_t getNumChannels() const {
+    return num_channels;
   }
 
   const short * const getFrames() const {
     return frames;
   }
 
-  const pa_channel_map* const getChannelMap() const {
-    return &channel_map;
+  const short * const getFrame(size_t frame) const {
+    return frames + frame * num_channels;
   }
+
+  short getFrameChannelVal(size_t frame, bool left) const;
 
   // set the sample's playback pan. -1.0 is all left, 1.0 is all right,
   // 0.0 is in the middle.
@@ -65,13 +57,12 @@ class Sample {
 
   std::string filename;
 
-  pa_sample_spec sample_spec;
-
-  size_t frame_size;
-  size_t total_bytes;
+  size_t num_frames;
+  size_t num_channels;
   short *frames;
 
-  pa_channel_map channel_map;
+  float volume;
+
   float pan;
   float pan_correction;
 };

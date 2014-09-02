@@ -7,6 +7,7 @@ using std::string;
 Ui::Ui() {
   initscr();
   noecho();
+  nodelay(stdscr, TRUE);
 }
 
 Ui::~Ui() {

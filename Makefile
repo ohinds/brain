@@ -11,12 +11,11 @@ CDEBUG = -g
 
 COPTIM =
 
-CINC = -I/usr/include/pulse \
-       -I/usr/include/yaml-cpp
+CINC = -I/usr/include/yaml-cpp
 
 CLIB = \
        -lncurses \
-       -lpulse \
+       -lasound \
        -lsndfile \
        -lrtmidi \
        -lyaml-cpp \
