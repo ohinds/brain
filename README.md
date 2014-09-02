@@ -5,7 +5,7 @@ Software drum brain
 
 Linux only, right now.
 
-Deps: pulseaudio, yaml-cpp >= 0.5, rtmidi, ncurses
+Deps: libasound, yaml-cpp >= 0.5, rtmidi, ncurses
 
 Compile (make), then
 
