@@ -20,7 +20,7 @@ using std::vector;
 Brain::Brain(const std::string &config_file)
   : init_error(false)
   , should_stop(false)
-  , use_midi(false)
+  , use_midi(true)
   , midi_in(NULL)
   , ui(true) {
 

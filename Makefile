@@ -10,10 +10,12 @@ CDEBUG = -g
 
 COPTIM =
 
-CINC = -I/usr/local/include/yaml-cpp
+BASE=/usr
+
+CINC = -I$(BASE)/include/yaml-cpp
 
 CLIB = \
-       -L/usr/local/lib \
+       -L$(BASE)/lib \
        -lncurses \
        -lasound \
        -lsndfile \
