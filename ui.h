@@ -7,7 +7,7 @@ class Ui {
 
  public:
 
-  Ui();
+  Ui(bool use_curses);
 
   ~Ui();
 
@@ -17,6 +17,7 @@ class Ui {
 
  private:
 
+  bool use_curses;
 };
 
 template <typename T>

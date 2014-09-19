@@ -27,8 +27,8 @@ bool check_alsa_error(int error_code) {
 
 Mixer::Mixer()
   : pcm_handle(NULL)
-  , buffer_size(1024)
-  , period_size(64)
+  , buffer_size(512)
+  , period_size(128)
   , master_volume(0.5)
   , next_buffer(NULL)
   , next_buffer_computed(false)
@@ -39,7 +39,9 @@ Mixer::~Mixer() {
     snd_pcm_close(pcm_handle);
   }
 
-  //delete next_buffer;
+  if (next_buffer != NULL) {
+    delete next_buffer;
+  }
 }
 
 bool Mixer::init() {
@@ -182,8 +184,9 @@ bool Mixer::tick() {
   }
 
   int error_code = snd_pcm_writei(pcm_handle, next_buffer, buffer_size);
+
   if (error_code == -EAGAIN) {
-    // do nothing
+    // ignored
   }
   else if (error_code == -EPIPE) {
     if (!check_alsa_error(snd_pcm_prepare(pcm_handle))) {

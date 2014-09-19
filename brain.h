@@ -22,16 +22,6 @@ class Brain {
 
   ~Brain();
 
-  void setReady(bool ready);
-
-  void setInitError(bool _init_error) {
-    init_error = _init_error;
-  }
-
-  bool getInitError() const {
-    return init_error;
-  }
-
   bool init();
 
   bool run();
@@ -50,6 +40,9 @@ class Brain {
   MidiSampleMap midi_sample_map;
 
   Mixer mixer;
+
+  bool use_midi;
   RtMidiIn *midi_in;
+
   Ui ui;
 };

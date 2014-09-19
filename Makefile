@@ -4,16 +4,16 @@ CFLAGS = -Wall \
          -Wno-reorder \
          -Wwrite-strings \
          -Wno-strict-aliasing \
-         -Wno-unknown-pragmas \
-         -std=c++11
+         -Wno-unknown-pragmas
 
 CDEBUG = -g
 
 COPTIM =
 
-CINC = -I/usr/include/yaml-cpp
+CINC = -I/usr/local/include/yaml-cpp
 
 CLIB = \
+       -L/usr/local/lib \
        -lncurses \
        -lasound \
        -lsndfile \
